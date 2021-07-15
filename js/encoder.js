@@ -1,6 +1,6 @@
 /**
  * encodeInstruction concatenates elements of instruction to one instruction
- * @autor  Rishat Kagirov
+ * @autor  Rishat Kagirov (iEPCBM)
  * @param  {Array.number} prefix Prefix bytes (0-4 bytes)
  * @param  {Array.number} opcode Opcode bytes (1-2 bytes)
  * @param  {number}       modrm  ModR/M byte
@@ -33,7 +33,7 @@ function checkInstruction(inst) {
   }
   //TEST 2
   inst.forEach((item, i) => {
-    if (typeof(item)!=="number"||item<0||item>255) {
+    if (typeof(item)!=="number"||item===undefined||item<0||item>255) {
       return false;
     }
   });

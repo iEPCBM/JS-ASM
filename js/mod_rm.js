@@ -1,4 +1,4 @@
-regNumeric = {
+regNum = {
   "a": 0,
   "c": 1,
   "d": 2,
@@ -9,7 +9,62 @@ regNumeric = {
   "di": 7,
 };
 
-function concatModRM(mod, reg, rm) {
+regOrder = {
+  "l": 0,
+  "h": 1,
+  "x": 0
+};
+
+/**
+ * getRegisterSize returns size
+ * @param  {string} register register name (AX, DL, SI, EAX, etc.)
+ * @return {number}          size (8,16 or 32). undefined - error
+ */
+function getRegisterSize(register) {
+  if (typeof(register)==="string") {
+    if (register[0]==='e') {
+      return 0x20;
+    }
+    else if (register.slice(-1)==='x'||
+             register.slice(-1)==='i'||
+             register.slice(-1)==='p') {
+      return 0x10;
+    }
+    else if (register.slice(-1)==='l'||
+             register.slice(-1)==='h') {
+      return 0x8;
+    }
+  }
+  return undefined;
+}
+
+/**
+ * encodeRegBits encodes REG bits
+ * @param  {string} register register name (AX, DL, SI, EAX, etc.)
+ * @return {number}          REG bits (000b-111b); undefined - error
+ */
+function encodeRegBits(register) {
+  if (typeof(register)==="string") {
+    let rnum, rorder;
+    if (register[0]==="e") { // 32bit regs filtration
+      register = register.substring(1);
+    }
+    if (register.length===2) {
+      if (register in regNum) {
+        return regNum[register];
+      }
+      else if (register[0] in regNum &&
+              register[1] in regOrder) {
+        rnum = regNum[register[0]];
+        rorder = regOrder[register[1]];
+        return (rorder<<2)|rnum;
+      }
+    }
+  }
+  return undefined;
+}
+
+function assembleModRM(mod, reg, rm) {
   try {
     if (!checkMod(mod)) throw "Invalid Mod [0;3]";
     if (!checkRegOpcode(reg)) throw "Invalid reg_opcode (not 3 bits)";
