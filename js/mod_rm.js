@@ -94,3 +94,7 @@ function checkRegOpcode(reg_opcode) {
 function checkRM(rm) {
   return rm<=7 && rm>=0;
 }
+
+function getModRM() {
+
+}
