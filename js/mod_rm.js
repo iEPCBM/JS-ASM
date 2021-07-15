@@ -46,22 +46,26 @@ function getRegisterSize(register) {
 function encodeRegBits(register) {
   if (typeof(register)==="string") {
     let rnum, rorder;
-    if (register[0]==="e") { // 32bit regs filtration
+    if (register[0]==="e") { // 32bit regs
       register = register.substring(1);
     }
     if (register.length===2) {
       if (register in regNum) {
-        return regNum[register];
+        return regNum[register]&0x7;
       }
       else if (register[0] in regNum &&
               register[1] in regOrder) {
         rnum = regNum[register[0]];
         rorder = regOrder[register[1]];
-        return (rorder<<2)|rnum;
+        return ((rorder<<2)|rnum)&0x7;
       }
     }
   }
   return undefined;
+}
+
+function getModBits(arg1, arg2) {
+// TODO: MOD detector
 }
 
 function assembleModRM(mod, reg, rm) {
