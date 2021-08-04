@@ -204,8 +204,8 @@ function getTokens (strCode) {
     }
     switch (lineType) {
       case "command":
-
-        mnemonicComands.indexOf();
+        let objCommand = unserializeCommand(codeLines[i]);
+        classificateOperands(objCommand.operands);
         break;
       default:
 
@@ -214,21 +214,44 @@ function getTokens (strCode) {
   return codeLines;
 }
 
-function extractCommand(strLine) {
+function unserializeCommand(strLine) {
   strLine.trim();
-  let mnemonic = strLine.match(/^(\w|\s)*\w(?=")|\w+/gm)[0];
-  mnemonic = mnemonic.toUpperCase();
-  let ops = strLine.substring(mnemonic.length).trim();
-  console.log(mnemonic);
-  console.log(ops);
+  let strMnemonic = strLine.match(/^(\w|\s)*\w(?=")|\w+/gm)[0];
+  let strArgs = strLine.substring(strMnemonic.length).trim();
+  argsList = strArgs.split(",");
+  argsList.forEach((arg, i) => {
+    argsList[i] = arg.trim();
+  });
+  return {
+    mnemonic: strMnemonic,
+    operands: argsList
+  };
+}
 
+function isRegister(strArg) {
+
+}
+
+function classificateOperands(operands) {
+  console.log(operands);
+
+  let numReg = /(?:\d+[a-f\d]+h)|(?:[0-7]+o)|(?:[01]+b)|(?:\d+d?)/i;
+  operands.forEach((operand, i) => {
+    if (operand.match(numReg)!==null&&
+    operand.match(numReg)[0]===operand) {
+      console.log(str2number(operand));
+    }
+    else if (true) {
+
+    }
+  });
 }
 
 function predictLineType(strLine) {
   strLine = strLine.trim();
   if (strLine.endsWith(":")) {
     return lineTypes.label;
-  } else if (new RegExp(dataSizes.join(" | ")).test(strLine)) {
+  } else if (new RegExp(dataSizes.join("|")).test(strLine)) {
     return lineTypes.data;
   } else if (strLine !== "") {
     return lineTypes.command;
@@ -240,10 +263,10 @@ function predictLineType(strLine) {
 tokens = [
     {
       type: "command",
-      mnemonicId: 67,
+      mnemonic: 67,
       operands: [
         {
-          type: "value",
+          type: "imm",
           value: 43
         },
         {
@@ -253,7 +276,7 @@ tokens = [
         {
           type: "address",
           registerId: 3,
-          bias: {
+          disp: {
             type: "value",
             value: 56
           }

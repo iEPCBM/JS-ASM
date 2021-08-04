@@ -16,29 +16,6 @@ regOrder = {
 };
 
 /**
- * getRegisterSize returns size
- * @param  {string} register register name (AX, DL, SI, EAX, etc.)
- * @return {number}          size (8,16 or 32). undefined - error
- */
-function getRegisterSize(register) {
-  if (typeof(register)==="string") {
-    if (register[0]==='e') {
-      return 0x20;
-    }
-    else if (register.slice(-1)==='x'||
-             register.slice(-1)==='i'||
-             register.slice(-1)==='p') {
-      return 0x10;
-    }
-    else if (register.slice(-1)==='l'||
-             register.slice(-1)==='h') {
-      return 0x8;
-    }
-  }
-  return undefined;
-}
-
-/**
  * encodeRegBits encodes REG bits
  * @param  {string} register register name (AX, DL, SI, EAX, etc.)
  * @return {number}          REG bits (000b-111b); undefined - error
@@ -51,13 +28,13 @@ function encodeRegBits(register) {
     }
     if (register.length===2) {
       if (register in regNum) {
-        return regNum[register]&0x7;
+        return regNum[register]&0x07;
       }
       else if (register[0] in regNum &&
               register[1] in regOrder) {
         rnum = regNum[register[0]];
         rorder = regOrder[register[1]];
-        return ((rorder<<2)|rnum)&0x7;
+        return ((rorder<<0x02)|rnum)&0x07;
       }
     }
   }
@@ -68,18 +45,29 @@ function getModBits(arg1, arg2) {
 // TODO: MOD detector
 }
 
+/**
+ * assembleModRM assebles ModR/M byte. ModR/M byte schema:
+ * 1     2     5     8
+ * ^*****^*****^*****^
+ * | Mod | Reg | R/M |
+ * *******************
+ * | x x | xxx | xxx |
+ * *******************
+ * @param  {Number} mod Mod bits
+ * @param  {Number} reg Reg bits (or addition OpCode bits)
+ * @param  {Number} rm  R/M bits
+ * @return {Number}     ModR/M byte [0-255]
+ */
 function assembleModRM(mod, reg, rm) {
   try {
     if (!checkMod(mod)) throw "Invalid Mod [0;3]";
-    if (!checkRegOpcode(reg)) throw "Invalid reg_opcode (not 3 bits)";
+    if (!checkRegOpcode(reg)) throw "Invalid Reg (not 3 bits)";
     if (!checkRM(rm)) throw "Invalid R/M (not 3 bits)";
   } catch (e) {
     console.log(e);
   } finally {
-    mod <<= 0x6;
-    reg <<= 0x3;
-    comparedByte = mod|reg|rm;
-    return comparedByte&0xFF;
+    comparedByte = ((mod << 0x06)|(reg << 0x03)|rm)&0xFF;
+    return comparedByte;
   }
 }
 
@@ -97,4 +85,13 @@ function checkRM(rm) {
 
 function getModRM() {
 
+}
+
+/**
+ * [ModRM description]
+ */
+class ModRM {
+  constructor(arrOperands) {
+
+  }
 }

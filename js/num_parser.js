@@ -5,9 +5,15 @@ radixes = {
   "d": 10
 };
 
+/**
+ * Is numeric the value in the following radix.
+ * @param  {String}  value number as string
+ * @param  {Number}  radix radix (from 2 to 36)
+ * @return {Boolean}       true - value is numeric, false - value is not numeric
+ */
 function isNumeric(value, radix) {
   let regexp;
-  if (radix<=0||radix>36) return false;
+  if (radix<=1||radix>36) return false;
   if (radix<=10) {
     regexp = RegExp("[0-"+(radix-1).toString()+"]+", "i");
   }
