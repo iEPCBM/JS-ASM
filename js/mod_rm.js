@@ -53,9 +53,9 @@ function getModBits(arg1, arg2) {
  * *******************
  * | x x | xxx | xxx |
  * *******************
- * @param  {Number} mod Mod bits
- * @param  {Number} reg Reg bits (or addition OpCode bits)
- * @param  {Number} rm  R/M bits
+ * @param  {Number} mod Mod field
+ * @param  {Number} reg Reg field (or OpCode extension field)
+ * @param  {Number} rm  R/M field
  * @return {Number}     ModR/M byte [0-255]
  */
 function assembleModRM(mod, reg, rm) {
@@ -71,18 +71,6 @@ function assembleModRM(mod, reg, rm) {
   }
 }
 
-function checkMod(mod) {
-  return mod<=3 && mod>=0;
-}
-
-function checkRegOpcode(reg_opcode) {
-  return reg_opcode<=7 && reg_opcode>=0;
-}
-
-function checkRM(rm) {
-  return rm<=7 && rm>=0;
-}
-
 function getModRM() {
 
 }
@@ -91,7 +79,108 @@ function getModRM() {
  * [ModRM description]
  */
 class ModRM {
-  constructor(arrOperands) {
+  #objReg;
+  #objRM;
 
+  constructor(reg, rm) {
+    if (!(ModRM.isRegister(rm) || ModRM.isEA(rm))) {
+      console.error("Invalid (S)RM field");
+    }
+    if (!(ModRM.isRegister(reg) || ModRM.isOpExt(reg))) {
+      console.error("Invalid Reg field");
+    }
+    this.#objReg = reg;
+    this.#objRM = rm;
+  }
+
+  get mod() {
+    let retMod = 0;
+    if (ModRM.isRegister(this.#objRM)) {
+      retMod = 0x03;
+    }
+    else if (ModRM.isEA(this.#objRM)) {
+      let dispSize = this.#objRM.getDispMinSize();
+      if (!this.#objRM.hasBase() && !this.#objRM.hasIndex() && dispSize===0x08) {
+        retMod = 0;
+      }
+      else if (dispSize/8<3) {
+        retMod = Math.trunc(dispSize/8);
+      }
+      else {
+        console.warn("Displacement size is very large. Setup mod = 0x00");
+      }
+    }
+    else {
+      console.warn("(S)RM field object is not detected. Setup mod = 0x00");
+    }
+    return retMod&0x03;
+  }
+
+  static isRegister(reg) {
+    return reg instanceof Register;
+  }
+
+  static isEA (ea) {
+    return ea instanceof EffectiveAddress;
+  }
+
+  static isOpExt(ext) {
+    return typeof(ext)==="number" & this.constructor.checkRegOpcode(ext);
+  }
+
+  static checkMod(mod) {
+    return mod<=3 && mod>=0;
+  }
+
+  static checkRegOpcode(reg_opcode) {
+    return reg_opcode<=7 && reg_opcode>=0;
+  }
+
+  static checkRM(rm) {
+    return rm<=7 && rm>=0;
+  }
+
+  assembleModRM () {
+    var reg, rm, comparedByte;
+    if (this.constructor.isRegister(this.#objReg)) {
+      reg=this.#objReg.regBits;
+    }
+    else if (this.constructor.isOpExt(this.#objReg)) {
+      reg=this.#objReg
+    }
+    else {
+      return undefined;
+    }
+
+    if (this.constructor.isRegister(this.#objRM)) {
+      rm=this.#objRM.regBits;
+    }
+    else if (this.constructor.isEA(this.#objRM)) {
+      rm=this.#objRM.rmBits;
+    }
+    else {
+      return undefined;
+    }
+    try {
+      if (!ModRM.checkMod(this.mod)) throw "Invalid Mod [0;3]";
+      if (!ModRM.checkRegOpcode(reg)) throw "Invalid Reg (not 3 bits)";
+      if (!ModRM.checkRM(rm)) throw "Invalid R/M (not 3 bits)";
+    } catch (e) {
+      console.log(e);
+    } finally {
+      comparedByte = ((this.mod << 0x06)|(reg << 0x03)|rm)&0xFF;
+    }
+    return comparedByte;
   }
 }
+
+exArrOps = [
+  {
+    type: "register",
+    obj: "object"
+  },
+  {
+    type: "effective address",
+
+  }
+];
