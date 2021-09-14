@@ -39,7 +39,9 @@ class Instruction {
   static validateInstruction(strMnemonic, arrOperands) {
     if (!instructions.hasOwnProperty(strMnemonic)) return false;
     if (instructions[strMnemonic] instanceof Array) {
+      instructions[strMnemonic].forEach((item, i) => {
 
+      });
     }
     else if (instructions[strMnemonic] instanceof Object) {
 
