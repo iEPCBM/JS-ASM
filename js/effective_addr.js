@@ -2,7 +2,12 @@
  * Notice.
  * GPR type only
  * Supports 16 bits addressation only, without scale factor and SIB byte.
- * Effective eddress Shema: [Base+Index+/-disp] (none or disp8 or disp16)
+ * Effective eddress Shema: [Base+Index+/-disp] (none or disp8 or disp16).
+ *
+ * For redefine segment register, please, use segment prefixes, e.g.:
+ * SS MOV CX, [0X0F]
+ * Not:
+ * MOV CX, [SS:0X0F]
  */
 class EffectiveAddress {
   #objBase;
@@ -21,6 +26,12 @@ class EffectiveAddress {
     "DI": 1
   };
 
+  /**
+   * Constructor.
+   * @param {Object} objBase  object of Register (BX, BP)
+   * @param {Object} objIndex object of Register (SI, DI)
+   * @param {Number} disp     displacement
+   */
   constructor(objBase, objIndex, disp) {
     this.#objBase=undefined;
     this.#objIndex=undefined;
@@ -119,20 +130,62 @@ class EffectiveAddress {
     return -1;
   }
 
-  static isValidBase(objBase) {
-    if (objBase instanceof Register) {
+  static isValidBase(strBase) {
+    if (Register.isValidRegister(strBase)) {
+      let objBase = new Register(strBase);
       return objBase.type===Register.regTypes.GPR &&
-          (objBase.name in EffectiveAddress.baseBits);
+        (objBase.name in EffectiveAddress.baseBits);
     }
     return false;
   }
 
-  static isValidIndex(objIndex) {
-    if (objIndex instanceof Register) {
+  static isValidIndex(strIndex) {
+    if (Register.isValidRegister(strIndex)) {
+      let objIndex = new Register(strIndex);
       return objIndex.type===Register.regTypes.GPR &&
-          (objIndex.name in EffectiveAddress.indexBits);
+        (objIndex.name in EffectiveAddress.indexBits);
     }
-    return false
+    return false;
+  }
+
+  /**
+   * Check suggested EA.
+   * Effective Address schema:
+   * [Base+Index+/-disp]
+   * @param  {String}  strEA suggested effective address string
+   * @return {Boolean}       true - valid; false - invalid
+   */
+  static isValidEA(strEA) {
+    strEA = strEA.trim();
+    if (!/^\[.*\]$/i.test(strEA)) {
+      return false;
+    }
+    strEA = strEA.slice(1, -1);
+    let strElems = strEA.split("+");
+    if (strElems.length>3) {
+      return false;
+    }
+    let hasBase, hasIndex, hasDisp;
+    hasBase = hasIndex = hasDisp = false;
+
+    for (var i = 0; i < strElems.length; i++) {
+      if (EffectiveAddress.isValidBase(strElems[i])) { // Base
+        if (hasBase) return false;
+        hasBase = true;
+      }
+      else if (EffectiveAddress.isValidIndex(strElems[i])) { // Index
+        if (hasIndex) return false;
+        hasIndex = true;
+      }
+      else if (!isNaN(str2number(strElems[i]))) { // Disp
+        if (hasDisp) return false;
+        hasDisp = true;
+      }
+      else {
+        return false;
+      }
+    }
+    return true;
   }
 }
 

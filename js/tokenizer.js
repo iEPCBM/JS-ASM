@@ -165,6 +165,15 @@ dataSizes = [
   "rt"
 ];
 
+// Instruction schema:
+// PREFIX + OPCODE + ModRM + !SIB + Disp + Imm (Max 15 bytes)
+operandTypes = {
+  reg:       0x00,
+  ea:        0x01,
+  num:       0x02,
+  named_imm: 0x03
+};
+
 //Assembly line spec:
 //  <mnemonic> [<op1>, <op2>, <op3> ;<comment>]
 //-- OR --
@@ -205,7 +214,8 @@ function getTokens (strCode) {
     switch (lineType) {
       case "command":
         let objCommand = unserializeCommand(codeLines[i]);
-        classificateOperands(objCommand.operands);
+        let operandsList = classificateOperands(objCommand.operands);
+        
         break;
       default:
 
@@ -232,19 +242,46 @@ function isRegister(strArg) {
 
 }
 
+function generateSchemaQuery(mnemonic, operandsList) {
+  let opTypes = operandsList.map(a => a.type);
+  return {
+    mnemonic: mnemonic,
+    operands: opTypes
+  };
+}
+
 function classificateOperands(operands) {
   console.log(operands);
-
+  let retData = [];
+  let schema = [
+    {val: "AX", type: operandTypes.reg}
+  ];
   let numReg = /(?:\d+[a-f\d]+h)|(?:[0-7]+o)|(?:[01]+b)|(?:\d+d?)/i;
   operands.forEach((operand, i) => {
     if (operand.match(numReg)!==null&&
     operand.match(numReg)[0]===operand) {
-      console.log(str2number(operand));
+      //console.log(str2number(operand));
+      console.log("Imm");
+      retData.push({type: operandTypes.num, val: operand})
     }
-    else if (true) {
-
+    else if (Register.isValidRegister(operand)) {
+      console.log("Regiter");
+      retData.push({type: operandTypes.reg, val: operand})
+    }
+    else if (EffectiveAddress.isValidEA(operand)) {
+      console.log("Effective Address / Displacement");
+      retData.push({type: operandTypes.ea, val: operand})
+    }
+    else if(/^[A-Za-z_][A-Za-z0-9_]*/i.test(operand)) {
+      console.log("Ptr");
+      retData.push({type: operandTypes.named_imm, val: operand})
+    }
+    else {
+      console.log("error. Ignored.");
     }
   });
+  console.log(retData);
+  return retData;
 }
 
 function predictLineType(strLine) {
@@ -295,4 +332,4 @@ tokens = [
         1,54,85,35,24
       ]
     }
-]
+  ]

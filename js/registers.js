@@ -45,7 +45,7 @@ class Register {
    */
   constructor(strName) {
     if (!Register.isValidRegister(strName)) {
-      console.warn();(strName+" is unknown register!");
+      console.warn(strName+" is unknown register!");
     }
     this.#name = strName.toUpperCase();
   }
