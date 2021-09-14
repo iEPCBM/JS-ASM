@@ -1,5 +1,7 @@
 /**
- * Register class
+ * Register class.
+ *
+ * Checked.
  */
 class Register {
   #name = "";

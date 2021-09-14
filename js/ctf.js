@@ -1,3 +1,7 @@
+/**
+ * Checked
+ */
+
 // CTF - TTTN field
 class CTF {
   static mnemonics = {

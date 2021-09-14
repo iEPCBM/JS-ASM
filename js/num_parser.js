@@ -1,3 +1,11 @@
+/**
+ * Checked.
+ */
+
+/**
+ * Radix dictionary
+ * @type {Object}
+ */
 radixes = {
   "b": 2,
   "o": 8,

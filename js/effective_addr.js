@@ -8,6 +8,8 @@
  * SS MOV CX, [0X0F]
  * Not:
  * MOV CX, [SS:0X0F]
+ *
+ * Checked.
  */
 class EffectiveAddress {
   #objBase;
