@@ -170,8 +170,15 @@ dataSizes = [
 operandTypes = {
   reg:       0x00,
   ea:        0x01,
-  num:       0x02,
+  imm:       0x02,
   named_imm: 0x03
+};
+
+operandMCTipes = {
+  imm:     0x00,
+  moffset: 0x01,
+  reg:     0x02,
+  rm:      0x03
 };
 
 //Assembly line spec:
@@ -215,7 +222,7 @@ function getTokens (strCode) {
       case "command":
         let objCommand = unserializeCommand(codeLines[i]);
         let operandsList = classificateOperands(objCommand.operands);
-        
+
         break;
       default:
 

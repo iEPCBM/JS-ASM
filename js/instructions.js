@@ -29,6 +29,9 @@ instructions = {
   },
   "ADC": {
 
+  },
+  "INT": {
+    ops: []
   }
 }
 
