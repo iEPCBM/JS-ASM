@@ -157,7 +157,7 @@ class Register {
                this.GPR_order!==undefined) {
         rnum = Register.#regNum[register[0]];
         rorder = this.GPR_order;
-        return ((rorder<<0x02)|rnum)&0x07;
+        return ((rorder << 0x02)|rnum)&0x07;
       }
     }
     return undefined;

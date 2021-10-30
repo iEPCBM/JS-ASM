@@ -147,14 +147,14 @@ lineTypes = {
 };
 
 dataSizes = [
-  "db",
-  "dw",
-  "du",
-  "dd",
-  "dp",
-  "df",
-  "dq",
-  "dt",
+  "db", // BYTE
+  "dw", // WORD
+  "du", // WORD 2
+  "dd", // DWORD
+  "dp", // 6 bytes
+  "df", // 6 bytes
+  "dq", // 8 bytes
+  "dt", // 10 bytes
 
   "rb",
   "rw",
@@ -167,19 +167,14 @@ dataSizes = [
 
 // Instruction schema:
 // PREFIX + OPCODE + ModRM + !SIB + Disp + Imm (Max 15 bytes)
-operandTypes = {
-  reg:       0x00,
-  ea:        0x01,
-  imm:       0x02,
-  named_imm: 0x03
-};
 
-operandMCTipes = {
-  imm:     0x00,
-  moffset: 0x01,
-  reg:     0x02,
-  rm:      0x03
-};
+labels = [
+  {name: "data", aaddr: 0x4}
+];
+
+dataList = [
+  {name: "msg", type: "dd", val: [43,64,23,11]}
+];
 
 //Assembly line spec:
 //  <mnemonic> [<op1>, <op2>, <op3> ;<comment>]
@@ -189,6 +184,13 @@ operandMCTipes = {
 //  <mark>: [;<comment>]
 //-- OR --
 //  [;<comment>]
+
+function compile(strCode) {
+  // STEP 1: tokenizing
+  tokens = getTokens(strCode);
+  //STEP 2: Find code by schema
+  //STEP 3:
+}
 
 /*
 * Returns array of tokens
@@ -212,6 +214,8 @@ function getTokens (strCode) {
     }
   }
 
+  let retVal = [];
+  let objLine = {};
   for (i=0; i<codeLines.length; i++) {
     let lineType = predictLineType(codeLines[i]);
     if (lineType === undefined) {
@@ -220,15 +224,26 @@ function getTokens (strCode) {
     }
     switch (lineType) {
       case "command":
-        let objCommand = unserializeCommand(codeLines[i]);
-        let operandsList = classificateOperands(objCommand.operands);
-
+        objLine = unserializeCommand(codeLines[i]);
+        objLine.operands = classificateOperands(objLine.operands);
+        console.log("=== BEGIN COMAND SUMARRY ===");
+        console.log("Command: "+codeLines[i]);
+        console.log("objCommand");
+        console.log(objLine);
+        console.log("=== END COMMAND SUMARRY ===");
+        break;
+      case "label":
+        console.log("LABEL");
+        break;
+      case "data":
+        console.log("DATA");
         break;
       default:
 
     }
+    retVal.push({type: lineType, objLine: objLine});
   }
-  return codeLines;
+  return retVal;
 }
 
 function unserializeCommand(strLine) {
@@ -239,6 +254,8 @@ function unserializeCommand(strLine) {
   argsList.forEach((arg, i) => {
     argsList[i] = arg.trim();
   });
+  objArgs = [];
+
   return {
     mnemonic: strMnemonic,
     operands: argsList
@@ -261,27 +278,29 @@ function classificateOperands(operands) {
   console.log(operands);
   let retData = [];
   let schema = [
-    {val: "AX", type: operandTypes.reg}
+    {val: "AX", type: operandASMTypes.reg}
   ];
   let numReg = /(?:\d+[a-f\d]+h)|(?:[0-7]+o)|(?:[01]+b)|(?:\d+d?)/i;
   operands.forEach((operand, i) => {
-    if (operand.match(numReg)!==null&&
-    operand.match(numReg)[0]===operand) {
+    if (!isNaN(NumParser.str2number(operand.trim()))) {
       //console.log(str2number(operand));
       console.log("Imm");
-      retData.push({type: operandTypes.num, val: operand})
+      obj = NumParser.str2number(operand.trim());
+      retData.push({type: operandASMTypes.imm, objVal: obj})
     }
     else if (Register.isValidRegister(operand)) {
       console.log("Regiter");
-      retData.push({type: operandTypes.reg, val: operand})
+      obj = new Register(operand.trim());
+      retData.push({type: operandASMTypes.reg, objVal: obj})
     }
     else if (EffectiveAddress.isValidEA(operand)) {
       console.log("Effective Address / Displacement");
-      retData.push({type: operandTypes.ea, val: operand})
+      obj = new EffectiveAddress(operand.trim());
+      retData.push({type: operandASMTypes.ea, objVal: obj})
     }
     else if(/^[A-Za-z_][A-Za-z0-9_]*/i.test(operand)) {
-      console.log("Ptr");
-      retData.push({type: operandTypes.named_imm, val: operand})
+      console.log("named_imm");
+      retData.push({type: operandASMTypes.named_imm, objVal: operand})
     }
     else {
       console.log("error. Ignored.");

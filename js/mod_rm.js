@@ -111,7 +111,7 @@ class ModRM {
       }
     }
     else {
-      console.warn("(S)RM field object is not detected. Setup mod = 0x00");
+      console.warn("RM field object is not detected. Setup mod = 0x00");
     }
     return retMod&0x03;
   }
@@ -125,7 +125,7 @@ class ModRM {
   }
 
   static isOpExt(ext) {
-    return typeof(ext)==="number" & this.constructor.checkRegOpcode(ext);
+    return typeof(ext)==="number" & ModRM.checkRegOpcode(ext);
   }
 
   static checkMod(mod) {
@@ -181,6 +181,5 @@ exArrOps = [
   },
   {
     type: "effective address",
-
   }
 ];

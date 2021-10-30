@@ -34,17 +34,22 @@ class EffectiveAddress {
    * @param {Object} objIndex object of Register (SI, DI)
    * @param {Number} disp     displacement
    */
-  constructor(objBase, objIndex, disp) {
+  constructor(strEA) {
+    !EffectiveAddress.isValidEA(strEA)
+      && console.error("Wrong effective address.");
+    var arrEA = EffectiveAddress.splitEA(strEA);
     this.#objBase=undefined;
     this.#objIndex=undefined;
-    if (EffectiveAddress.isValidBase(objBase)) {
-      this.#objBase=objBase;
-    }
-    if (EffectiveAddress.isValidIndex(objIndex)) {
-      this.#objIndex=objIndex;
-    }
-    if (typeof(disp)==="number") {
-      this.#disp=disp;
+    for (var i = 0; i < arrEA.length; i++) {
+      if (EffectiveAddress.isValidBase(arrEA[i])) {
+        this.#objBase = new Register(arrEA[i]);
+      }
+      if (EffectiveAddress.isValidIndex(arrEA[i])) {
+        this.#objIndex = new Register(arrEA[i]);
+      }
+      if (!isNaN(NumParser.str2number(arrEA[i]))) {
+        this.#disp=NumParser.str2number(arrEA[i]);
+      }
     }
   }
 
@@ -78,19 +83,8 @@ class EffectiveAddress {
    * @return {Number} count of bits
    */
   getDispMinSize() {
-    // BUG 17-08-21: 32 bit values only. this.#disp>32 bits freezes the cycle
-    /*
-    let bitness=0;
-    for (let t_disp = this.#disp; t_disp!==0; bitness++) {
-      t_disp>>=0x08;
-    }
-    return 1<<Math.floor(bitness/2);
-    */
-
-    // FIXED:
     if (this.hasDisp()) {
-      let bytes = Math.ceil(this.#disp.toString(0x10).length/2);
-      return 8*1<<Math.ceil(Math.log2(bytes));
+      return NumParser.getMinSize(this.#disp);
     }
     return 0;
   }
@@ -150,6 +144,16 @@ class EffectiveAddress {
     return false;
   }
 
+  static splitEA(strEA) {
+    strEA = strEA.trim();
+    strEA = strEA.slice(1, -1); // Remove brackets
+    var retArr = strEA.split("+");
+    for (var i = 0; i < retArr.length; i++) {
+      retArr[i] = retArr[i].trim();
+    }
+    return retArr;
+  }
+
   /**
    * Check suggested EA.
    * Effective Address schema:
@@ -162,8 +166,7 @@ class EffectiveAddress {
     if (!/^\[.*\]$/i.test(strEA)) {
       return false;
     }
-    strEA = strEA.slice(1, -1);
-    let strElems = strEA.split("+");
+    let strElems = EffectiveAddress.splitEA(strEA);
     if (strElems.length>3) {
       return false;
     }
@@ -179,7 +182,7 @@ class EffectiveAddress {
         if (hasIndex) return false;
         hasIndex = true;
       }
-      else if (!isNaN(str2number(strElems[i]))) { // Disp
+      else if (!isNaN(NumParser.str2number(strElems[i]))) { // Disp
         if (hasDisp) return false;
         hasDisp = true;
       }
