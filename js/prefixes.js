@@ -1,7 +1,7 @@
 class Prefix {
   static prefixes = {
     operandOverride:  0x66,
-    addressOverride:  0x67, // USES ALWAYS WITH MOD [0,2]
+    addressOverride:  0x67, // USES ALWAYS WITH MOD [0,2] AND D==1
 // SEGMENT OVERRIDE (so)
     so_cs:            0x2E,
     so_ds:            0x3E,

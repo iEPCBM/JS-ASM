@@ -77,24 +77,370 @@ instructions = {
     }
   ],
   "ADC": [
+    // reg to rm
+    // rm to reg
     {
-     ops: [
-       operandMCTypes.reg,
-       operandMCTypes.rm
-     ],
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
     //        ccccccds
       code: 0b00010010,
       hasDirBit: true,
       hasSizeBit: true,
       hasImmSizeBit: false,
       allowedSizes: 0b111
+    },
+    {
+      ops: [
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        ccccccxs
+      code: 0b10000000,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      opcodeExt: 0b010
     }
   ],
-  "INT": {
-    ops: [
-      operandMCTypes.imm
-    ]
-  },
+  "ADD": [
+    // reg to rm
+    // rm to reg
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b00000010,
+      hasDirBit: true,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    },
+    {
+      ops: [
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        ccccccxs
+      code: 0b10000000,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      opcodeExt: 0b000
+    }
+  ],
+  "AND": [
+    // reg to rm
+    // rm to reg
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b00100010,
+      hasDirBit: true,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    },
+    {
+      ops: [
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        ccccccxs
+      code: 0b10000000,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      opcodeExt: 0b100
+    }
+  ],
+/*
+  "ARPL": [
+    // reg to rm
+    // rm to reg
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
+    //        cccccccc
+      code: 0b01100011,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+    //              8 16 32
+      allowedSizes: 0b010
+    }
+  ],*/
+  /*
+  "CPUID": [
+    {
+      ops: [],
+      code: 0b10100010,
+      prefixes: [0x0F]
+    }
+  ],
+  */
+  "CALL": [
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+    //        cccccccc
+      code: 0b11101000,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b011
+    },
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccxs
+      code: 0b11111111,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      opcodeExt: 0b100
+    }
+  ],
+  "CBW": [
+    {
+      ops: [],
+      code: 0b10011000,
+      prefixes: []
+    }
+  ],
+  "CLC": [
+    {
+      ops: [],
+      code: 0b11111000,
+      prefixes: []
+    }
+  ],
+  "CLD": [
+    {
+      ops: [],
+      code: 0b11111100,
+      prefixes: []
+    }
+  ],
+  "CLI": [
+    {
+      ops: [],
+      code: 0b11111010,
+      prefixes: []
+    }
+  ],
+  "CMC": [
+    {
+      ops: [],
+      code: 0b11110101,
+      prefixes: []
+    }
+  ],
+  "INT": [
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+    //        ccccccds
+      code: 0b11001101,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b100,
+    }
+  ],
+  "CMP": [
+    // reg to rm
+    // rm to reg
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b00111010,
+      hasDirBit: true,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    },
+    // imm to reg
+    {
+      ops: [
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        cccccccs
+      code: 0b10000000,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b111
+    }
+  ],
+  "CWD": [
+    {
+      ops: [],
+      code: 0b10011001,
+      prefixes: []
+    }
+  ],
+  "DAA": [
+    {
+      ops: [],
+      code: 0b00100111,
+      prefixes: []
+    }
+  ],
+  "DAS": [
+    {
+      ops: [],
+      code: 0b00101111,
+      prefixes: []
+    }
+  ],
+  "DEC": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11111110,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b001
+    }
+  ],
+  "DIV": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11110110,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b110
+    }
+  ],
+  "HLT": [
+    {
+      ops: [],
+    //        ccccccds
+      code: 0b11110100,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    }
+  ],
+  "IDIV": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11110110,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b111
+    }
+  ],
+  "IMUL": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11110110,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b101
+    },
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        ccccccds
+      code: 0b01101001,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+    },
+  ],
+  "IN": [
+    {
+      ops: [],
+    //        ccccccds
+      code: 0b11101100,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+    },
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+    //        ccccccds
+      code: 0b11100100,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b100,
+    },
+  ],
+  "INC": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11111111,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b000
+    }
+  ],
+  "INTO": [
+    {
+      ops: [],
+    //        ccccccds
+      code: 0b11001110,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    }
+  ],
   "MOV": [
     // reg to rm
     // rm to reg
@@ -131,13 +477,15 @@ class Instruction {
   #strMnemonic;
   #objOperands;
   #flag_d;
-  constructor(objAsmCommand, flag_d) {
-    if (!Instruction.validateInstruction(objAsmCommand)) {
-      console.error("Wrong command");
-    }
+  #logger
+  constructor(objAsmCommand, flag_d, logger) {
+    this.#logger = logger;
     this.#flag_d = flag_d;
     this.#strMnemonic = objAsmCommand.mnemonic.toUpperCase();
     this.#objOperands = Instruction.asm2mc_conv(objAsmCommand.operands);
+    if (!Instruction.validateInstruction(objAsmCommand)) {
+      logger.sendLogMessage(LogProc.logLevels.error, "Wrong instruction: "+this.instrSchema);
+    }
     console.log(this.#objOperands);
   }
 
@@ -159,11 +507,6 @@ class Instruction {
     var doDirOverride = objFeedback.dirOverride;
     opcode = objInstr.code;
 
-    // STEP 3. Apply dirrection bit
-    if (doDirOverride) {
-      opcode ^= 0x02;
-    }
-
     // STEP 4. Apply size bit
     // var sizes = [];
     var regSize = 0;
@@ -174,11 +517,11 @@ class Instruction {
       if (item.type===operandMCTypes.imm) {
         //sizes.push(NumParser.getMinSize(item.objVal));
         let sz = NumParser.getMinSize(item.objVal);
-        if (sz > 32 ||
-            immSize !== 0) {
-              console.warn("Immediate owerflowed.");
-        }
         immSize = sz;
+        if (sz > 32) {
+              console.warn("Immediate owerflowed.");
+              immSize = 32;
+        }
         imm = item.objVal;
       }
       else if (typeof(item.objVal)==="object") {
@@ -205,26 +548,46 @@ class Instruction {
         }
       }
     });
-    /*
-    for (let i = 0; i < sizes.length; i++) {
-      if (i>0 && sizes[i]!==sizes[i-1]) {
-        console.warn("Sizes of operands are different.");
-      }
-    }
-    */
+
     if (objInstr.allowedSizes & regSize>>3 === 0 && regSize !== 0) {
       console.warn("Unsupported operand size.");
     }
-
-    if (regSize===8) {
-      opcode&=0xFE;
-    }
-    else {
-      opcode|=0x01;
-      if ((regSize===16 && this.#flag_d) ||
-      (regSize===32 && !this.#flag_d)) {
-        prefixes.push(Prefix.prefixes.operandOverride);
+    if (typeof(objInstr.ops)==="object" && objInstr.ops.length>0) {
+      if (objInstr.hasSizeBit) {
+        if (this.hasField(operandMCTypes.reg)||
+          (this.hasField(operandMCTypes.rm)&&f_rm instanceof Register)) {
+            if (regSize===8) {
+              opcode&=0xFE;
+            }
+            else {
+              opcode|=0x01;
+              if ((regSize===16 && this.#flag_d) ||
+              (regSize===32 && !this.#flag_d)) {
+                prefixes.push(Prefix.prefixes.operandOverride);
+              }
+            }
+        }
+        else if (this.hasField(operandMCTypes.imm)&&imm!==undefined) {
+          if(immSize===8) {
+            opcode&=0xFE;
+          }
+          else {
+            opcode|=0x01;
+            if ((immSize===16 && this.#flag_d) ||
+            (immSize>=32 && !this.#flag_d)) {
+              prefixes.push(Prefix.prefixes.operandOverride);
+            }
+          }
+        }
       }
+      if ((doDirOverride && objInstr.hasDirBit) ||
+      (this.bitS && objInstr.hasImmSizeBit)) {
+        opcode ^= 0x02;
+      }
+    }
+
+    if (typeof(objInstr.sec_code)==="number") {
+      opcode = [opcode, objInstr.sec_code];
     }
 
     // STEP 5. Generate ModRM
@@ -232,33 +595,31 @@ class Instruction {
       f_reg = objInstr.opcodeExt;
     }
     if (imm!==undefined) {
-      if (f_rm instanceof Register) {
+      if (this.bitS && objInstr.hasImmSizeBit) {
+        chunckedImm = this.chunkVal(imm, 8);
+      }
+      else if (f_rm instanceof Register) {
         chunckedImm = this.chunkVal(imm, f_rm.size);
       }
       else {
-        chunckedImm = this.chunkVal(imm);
+        chunckedImm = this.chunkVal(imm, immSize);
       }
     }
 
-    var cmd = "";
-    prefixes.forEach((item, i) => {
-      cmd+=item.toString(16);
-    });
-    cmd+=opcode.toString(16);
-    if (f_reg !== undefined &&
-    f_rm !== undefined) {
-      var modrm = new ModRM(f_reg, f_rm);
-      cmd+=modrm.assembleModRM().toString(16);
+    retCode = retCode.concat(prefixes);
+    if (typeof(opcode)==="number") {
+      retCode.push(opcode);
     }
-    disp.forEach((item, i) => {
-      cmd+=item.toString(16);
-    });
-    chunckedImm.forEach((item, i) => {
-      cmd+=item.toString(16);
-    });
-    console.log(disp);
-    console.log(chunckedImm);
-    console.log(cmd);
+    else if (typeof(opcode)==="object") {
+      retCode = retCode.concat(opcode);
+    }
+    if (f_reg !== undefined && f_rm !== undefined) {
+      var modrm = new ModRM(f_reg, f_rm);
+      retCode.push(modrm.assembleModRM());
+    }
+    retCode = retCode.concat(disp);
+    retCode = retCode.concat(chunckedImm);
+    return retCode;
   }
 
   chunkVal(val, size = 0) {
@@ -284,6 +645,77 @@ class Instruction {
       }
     }
     return retVal;
+  }
+
+  hasField(type) {
+    for (var i = 0; i < this.#objOperands.length; i++) {
+      if (this.#objOperands[i].type===type) return true;
+    }
+    return false;
+  }
+
+  get instrSchema() {
+    var retVal = this.#strMnemonic+" ";
+    this.#objOperands.forEach((item, i) => {
+      retVal+=Object.keys(operandMCTypes).find(key => operandMCTypes[key] === item.type);
+      if (i<this.#objOperands.length-1) {
+        retVal+=", ";
+      }
+    });
+    return retVal;
+  }
+
+  /**
+   * [bitS description]
+   * +-----+-------+-------+-------+-------+
+   * |  w  |   0   |   0   |   1   |   1   |
+   * +-----+-------+-------+-------+-------+
+   * |  s  |   0   |   1   |   0   |   1   |
+   * +-----+-------+-------+-------+-------+
+   * | r/m |   8   |   8   | 16/32 | 16/32 |
+   * +-----+-------+-------+-------+-------+
+   * | imm |   8   |   8   | 16/32 |   8   |
+   * +-----+-------+-------+-------+-------+
+   * @return {[type]} [description]
+   */
+  get bitS() {
+    var rmLen = 0;
+    var immLen = 0;
+    var isEA = false;
+    for (var i = 0; i < this.#objOperands.length; i++) {
+      if (this.#objOperands[i].type===operandMCTypes.rm &&
+      this.#objOperands[i].objVal instanceof EffectiveAddress) isEA = true;
+      else if ((this.#objOperands[i].type===operandMCTypes.rm ||
+      this.#objOperands[i].type===operandMCTypes.reg) &&
+      this.#objOperands[i].objVal instanceof Register) {
+        rmLen = this.#objOperands[i].objVal.size;
+      }
+      else if (this.#objOperands[i].type===operandMCTypes.imm) {
+        immLen = NumParser.getMinSize(this.#objOperands[i].objVal);
+      }
+    }
+    if (isEA) {
+      if (immLen===8) {
+        return true;
+      }
+      else if (immLen === 16 || immLen === 32) {
+        return false;
+      }
+    }
+    else if (rmLen>0) {
+      if (rmLen === 8) {
+        return true;
+      }
+      else if (rmLen === 16 || rmLen === 32) {
+        if (immLen === 8) {
+          return true;
+        }
+        else if (immLen === 16 || immLen === 32) {
+          return false;
+        }
+      }
+    }
+    return false;
   }
 
   /**
@@ -322,19 +754,6 @@ class Instruction {
     }
   }
 
-/*
-  get serialized() {
-    var ret = this.#objAsmCommand.mnemonic;
-    ret+=" ";
-    for (let i = 0; i < this.#objAsmCommand.operands.length; i++) {
-      ret+=this.#objAsmCommand.operands[i].val;
-      if (i !== this.#objAsmCommand.operands.length-1) {
-        ret+=", ";
-      }
-    }
-    return ret;
-  }
-*/
   /**
    * Check the instruction and his operands with the dict "instructions"
    *
@@ -349,27 +768,7 @@ class Instruction {
       let operands = [];
       let arrInstr = instructions[strMnemonic];
       operands = Instruction.asm2mc_conv(objCommand.operands);
-      /*
-      for (var i = 0; i < arrInstr.length; i++) {
-        if (arrInstr[i].ops.length !== objCommand.operands.length) {
-          console.warn("Wrong operand list!");
-          hasSimilarOperands = false;
-        }
-        else {
-          operands = Instruction.asm2mc_conv(objCommand.operands);
-          if (!(arrInstr[i].ops[0] === operands[1].type &&
-            arrInstr[i].ops[1] === operands[0].type &&
-            arrInstr[i].hasDirBit)) {
-              for (var j = 0; j < arrInstr[i].ops.length; j++) {
-                if (arrInstr[i].ops[j] !== operands[j].type) {
-                  hasSimilarOperands = false;
-                  break;
-                }
-              }
-          }
-        }
-      }
-      */
+
       if (Instruction.findInstruction(strMnemonic, operands) === undefined) {
         return false;
       }

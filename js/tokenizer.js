@@ -185,10 +185,20 @@ dataList = [
 //-- OR --
 //  [;<comment>]
 
-function compile(strCode) {
+function compile(strCode, logger) {
   // STEP 1: tokenizing
   tokens = getTokens(strCode);
   //STEP 2: Find code by schema
+  var code = [];
+  tokens.forEach((item, i) => {
+    let instruction = new Instruction(item.objLine, 0, logger); // d=0, cos asm 16-bit addressing mode support only
+    code = code.concat(instruction.machineCode);
+  });
+  var strCode = "";
+  code.forEach((item, i) => {
+    strCode+=('00'+item.toString(16)).slice(-2);
+  });
+  console.log(strCode);
   //STEP 3:
 }
 
@@ -314,7 +324,7 @@ function predictLineType(strLine) {
   strLine = strLine.trim();
   if (strLine.endsWith(":")) {
     return lineTypes.label;
-  } else if (new RegExp(dataSizes.join("|")).test(strLine)) {
+  } else if (new RegExp("^[A-Za-z_][A-Za-z0-9_]*\s+("+dataSizes.join("|")+")").test(strLine)) {
     return lineTypes.data;
   } else if (strLine !== "") {
     return lineTypes.command;

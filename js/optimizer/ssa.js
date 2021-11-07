@@ -1,0 +1,3 @@
+/**
+ * Start-small algorithm
+ */

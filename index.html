@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>JavaScript Assembler!</title>
     <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+    <script type="text/javascript" src="./js/logger.js"></script>
     <script type="text/javascript" src="./js/num_parser.js"></script>
     <script type="text/javascript" src="./js/prefixes.js"></script>
     <script src="./js/operand.js" charset="utf-8"></script>
@@ -12,6 +13,7 @@
     <script type="text/javascript" src="./js/mod_rm.js"></script>
     <script src="./js/instructions.js" charset="utf-8"></script>
     <script type="text/javascript" src="./js/error.js"></script>
+    <script type="text/javascript" src="./js/addr_label.js"></script>
     <script type="text/javascript" src="./js/data_sec.js"></script>
     <script type="text/javascript" src="./js/tokenizer.js"></script>
     <script type="text/javascript" src="./js/encoder.js"></script>
@@ -44,8 +46,8 @@ mov bl, al
 int 21h
 
 dos_msg db 'Test 21H (MS-DOS)$'</textarea>
-      <input type="button" name="btn-assembly" value="Compile!">
-      <p id="err-wrapper"></p>
+      <input type="button" id="btn-assembly" value="Compile!">
+      <div id="log-wrapper"></div>
     </div>
   </body>
 </html>

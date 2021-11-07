@@ -32,12 +32,12 @@ class Register {
                 "BP", "EBP",
                 "SP", "ESP",
                 "FLAGS", "EFLAGS", // Please, encode into [ds:0x00]
-                "CS",
-                "FS",
-                "DS",
-                "GS",
-                "ES",
-                "SS",
+                "CS", //------------------------------
+                "FS", //                             |
+                "DS", //   S E G M E N T             |
+                "GS", //   R E G I S T E R S         |
+                "ES", //                             |
+                "SS", //------------------------------
                 "IP", "EIP" // Please, encode into [ds:0x00]
   ];
 
