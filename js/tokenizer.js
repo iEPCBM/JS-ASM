@@ -322,11 +322,12 @@ function classificateOperands(operands) {
 
 function predictLineType(strLine) {
   strLine = strLine.trim();
+  strLine = strLine.toLowerCase();
   if (strLine.endsWith(":")) {
     return lineTypes.label;
-  } else if (new RegExp("^[A-Za-z_][A-Za-z0-9_]*\s+("+dataSizes.join("|")+")").test(strLine)) {
+  } else if (RegExp("^[A-Za-z_][A-Za-z0-9_]*\\s+(?:"+dataSizes.join("|")+").*$").test(strLine)) {
     return lineTypes.data;
-  } else if (strLine !== "") {
+  } else if (strLine.length>1) {
     return lineTypes.command;
   } else {
     return undefined;

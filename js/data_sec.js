@@ -15,8 +15,8 @@ class DataDef {
     "t": 0x0A  // 10 BYTES
   };
   static dataContaining = {
-    "d": 0x00, // DATA
-    "r": 0x01  // FREE FIELD
+    "d": 0x01, // DATA
+    "r": 0x00  // FREE FIELD
   };
 
   static str2code(str) {
@@ -65,28 +65,35 @@ class DataDef {
 
   /**
    * Constructor
-   * @param {String} strName         name of field
-   * @param {String} strMSxizeOp     sizing operand
-   * @param {Number} realSize        size of defined content (undefined - auto)
-   * @param {Array}  [arrContent=[]] defined content (desearialized)
+   * @param {String} strLine line of code
    */
-  constructor(strName, strMSxizeOp, strRaw, realSize) {
-    this.addrLabel = AddrLabel(strName.toLowerCase());
-    strMSxizeOp = strMSxizeOp.toLowerCase();
-    if (strMSxizeOp.length!==2) {
-      console.warn("Wrong data size: "+strMSxizeOp);
+  constructor(strLine) {
+    strLine = strLine.trim();
+    var arrLine = strLine.split(/(?:(?<=^\w+)\s)|(?:(?<=^\w+\s+\w+)\s)/i);
+    if (arrLine.length>3) {
+      console.warn("Wrong data");
     }
-    this.#isFilled = DataDef.dataContaining[strMSxizeOp[0]]?true:false;
-
-    let sizing = DataDef.dataSizes[strMSxizeOp[1]];
-    this.#size = Math.ceil(realSize/sizing)*sizing;
+    this.addrLabel = new AddrLabel(arrLine.at(0));
+    var strMSizeOp = arrLine.at(1).toLowerCase();
+    if (strMSizeOp.length!==2) {
+      console.warn("Wrong data size: "+strMSizeOp);
+    }
+    this.#isFilled = DataDef.dataContaining[strMSizeOp[0]]?true:false;
     if (this.#isFilled) {
-      this.arrContent = DataDef.unserializedData(strRaw);
+      this.arrContent = DataDef.unserializedData(arrLine.at(-1));
     }
     else {
-      this.arrContent = [];
+      this.arrContent = [0x00];
+      if (arrLine.length===3) {
+        let size = NumParser.str2number(arrLine.at(-1));
+        for (var i = 1; i < size; i++) {
+          this.arrContent.push(0x00);
+        }
+      }
     }
-    
+
+    let sizing = DataDef.dataSizes[strMSizeOp[1]];
+    this.#size = Math.ceil(this.arrContent.length/sizing)*sizing;
   }
 
   get contentSize() {

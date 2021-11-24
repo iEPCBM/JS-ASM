@@ -14,7 +14,7 @@
 class EffectiveAddress {
   #objBase;
   #objIndex;
-  #disp = 0x00;
+  #disp = 0x0000;
 
   static maxDispSize = 0x10; // Supports 16-bit addr. mode only (max - disp16)
 

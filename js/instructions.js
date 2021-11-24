@@ -470,6 +470,35 @@ instructions = {
       allowedSizes: 0b111,
       opcodeExt: 0b000
     }
+  ],
+  "XOR": [
+    // reg to rm
+    // rm to reg
+    {
+      ops: [
+        operandMCTypes.reg,
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b00110010,
+      hasDirBit: true,
+      hasSizeBit: true,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111
+    },
+    {
+      ops: [
+        operandMCTypes.rm,
+        operandMCTypes.imm
+      ],
+    //        ccccccxs
+      code: 0b10000000,
+      hasDirBit: false,
+      hasSizeBit: true,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      opcodeExt: 0b110
+    }
   ]
 }
 
@@ -544,7 +573,15 @@ class Instruction {
           prefixes[prefixes.length-1]!==Prefix.prefixes.addressOverride)) {
             this.#flag_d && prefixes.push(Prefix.prefixes.addressOverride);
             f_rm = item.objVal;
-            disp = this.chunkVal(f_rm.displacement);
+            disp = [];
+            if(f_rm.hasDisp()) {
+              if (!f_rm.hasBase()&&!f_rm.hasIndex()) {
+                disp = this.chunkVal(f_rm.displacement, 0x10);
+              }
+              else {
+                disp = this.chunkVal(f_rm.displacement);
+              }
+            }
         }
       }
     });
