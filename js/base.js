@@ -4,8 +4,9 @@ $(document).ready(function() {
   var myCodeMirror = CodeMirror.fromTextArea(document.getElementById("code-area"), {
     mode:  "asm",
     lineNumbers: true,
-    theme: "abcdef"
+    theme: "cobalt"
   });
+  myCodeMirror.setSize("100%", "100%");
 
   logger = new LogProc(function(logLevel, strMsg, lineOfCode=-1) {
     let colors = {
@@ -28,6 +29,7 @@ $(document).ready(function() {
   });
   $("#btn-assembly").click(function(){
     $("#log-wrapper").empty();
-    compile(myCodeMirror.getValue(), logger);
+    compile(myCodeMirror.getValue(), parseInt($("#input-org-addr").val(), 16),
+      $("#input-filename").val(), $("#chb-use32").is(':checked'), logger);
   });
 });

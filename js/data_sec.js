@@ -73,19 +73,19 @@ class DataDef {
     if (arrLine.length>3) {
       console.warn("Wrong data");
     }
-    this.addrLabel = new AddrLabel(arrLine.at(0));
-    var strMSizeOp = arrLine.at(1).toLowerCase();
+    this.addrLabel = new AddrLabel(arrLine.at(0).trim());
+    var strMSizeOp = arrLine.at(1).toLowerCase().trim();
     if (strMSizeOp.length!==2) {
       console.warn("Wrong data size: "+strMSizeOp);
     }
     this.#isFilled = DataDef.dataContaining[strMSizeOp[0]]?true:false;
     if (this.#isFilled) {
-      this.arrContent = DataDef.unserializedData(arrLine.at(-1));
+      this.arrContent = DataDef.unserializedData(arrLine.at(-1).trim());
     }
     else {
       this.arrContent = [0x00];
       if (arrLine.length===3) {
-        let size = NumParser.str2number(arrLine.at(-1));
+        let size = NumParser.str2number(arrLine.at(-1).trim());
         for (var i = 1; i < size; i++) {
           this.arrContent.push(0x00);
         }

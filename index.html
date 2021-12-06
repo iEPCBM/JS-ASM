@@ -19,35 +19,96 @@
     <script type="text/javascript" src="./js/encoder.js"></script>
     <script src="third_party/codemirror-5.61.1/lib/codemirror.js"></script>
     <link rel="stylesheet" href="third_party/codemirror-5.61.1/lib/codemirror.css">
-    <link rel="stylesheet" href="third_party/codemirror-5.61.1/theme/abcdef.css">
+    <link rel="stylesheet" href="third_party/codemirror-5.61.1/theme/cobalt.css">
     <script src="third_party/codemirror-5.61.1/addon/mode/simple.js"></script>
     <script type="text/javascript" src="js/mode_asm.js"></script>
     <script type="text/javascript" src="js/base.js"></script>
 
     <script type="text/javascript" src="js/unit_test/unit_instr.js"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=VT323">
+    <link rel="stylesheet" href="css/base.css">
   </head>
   <body>
-    <h1>JavaScript x86 Assembler!</h1>
+    <div class="header-wrapper">
+      <h1 class="title">JavaScript x86 Assembler!</h1>
+      <div class="nav-wrapper">
+        <ul class="nav-container"><li><a title="Open repository" href="#">ls ./repo</a></li><li><a title="Open manual" href="#">man js-asm</a></li><li><a title="Open autor's github page" href="#">lynx github.com/iEPCBM</a></li>
+        </ul>
+      </div>
+    </div>
     <div class="desc-wrapper">
 
     </div>
     <div class="ide-wrapper">
-      <textarea id="code-area" name="asm-code" rows="8" cols="80">
-;example program
-mov ah, 09h
-mov dx, dos_msg ;set addr
-int 21h
+      <textarea id="code-area" name="asm-code">
+; EXAMPLE PROGRAM
 
-mov ah, 4ch
-mov al, 00h
+; PRINT TEXT FROM MSG_1
+MOV AH, 09H
+MOV DX, MSG_1 ; SET ADDR
+INT 21H
 
-mov bl, al
+; INPUT TEXT TO BUFFER
+MOV AH,        0AH
+MOV DX,        BUFFER
+MOV BX,        DX
+MOV [BUFFER],  11
+INT 21H
 
-int 21h
+; PRINT TEXT FROM MSG_2
+MOV AH, 09H
+MOV DX, MSG_2
+INT 21H
 
-dos_msg db 'Test 21H (MS-DOS)$'</textarea>
-      <input type="button" id="btn-assembly" value="Compile!">
+; PRINT TEXT FROM BUFFER
+MOV DX,        BUFFER
+MOV BX,        DX
+MOV CL,        [BX+1]
+MOV SI,        CX
+MOV [BX+SI+2], 24H
+MOV AH,        09H
+ADD DX,        02H
+INT 21H
+
+; PRINT TEXT FROM MSG_2_END
+MOV AH, 09H
+MOV DX, MSG_2_END
+INT 21H
+
+; EXIT
+MOV AH, 4CH
+XOR AL, AL
+XOR BL, BL
+INT 21H
+
+; DATA SECTION
+BUFFER     RB  12
+MSG_1      DB  'What is your name?', 13, 10, 24H
+MSG_2      DB  13, 10, 13, 10, 'Hello, ', 24H
+MSG_2_END  DB  '!', 24H
+</textarea>
+      <div class="ui-wrapper pre-footer">
+        <div class="param-container">
+          <p class="label">Org address: 0x</p>
+          <input pattern="[a-fA-F\d]+" id="input-org-addr" value="100"/>
+        </div>
+        <div class="param-container">
+          <p class="label">__code32: </p>
+          <div class="chb-wrapper">
+            <input type="checkbox" id="chb-use32"/>
+          </div>
+        </div>
+        <div class="param-container">
+          <p class="label">Output file: </p>
+          <input id="input-filename" value="program.com"/>
+        </div>
+        <input class="bt" type="button" id="btn-assembly" value="Assemble & download!">
+      </div>
       <div id="log-wrapper"></div>
+    </div>
+    <div class="footer-wrapper">
+      <p>Copyright &copy; 2021 Rishat D. Kagirov</p>
+      <p class="repo-link"><a href="#">View repository</a></p>
     </div>
   </body>
 </html>

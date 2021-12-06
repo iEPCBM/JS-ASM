@@ -494,19 +494,143 @@ instructions = {
     //        ccccccxs
       code: 0b10000000,
       hasDirBit: false,
-      hasSizeBit: true,
+      hasSizeBit: false,
       hasImmSizeBit: true,
       allowedSizes: 0b111,
       opcodeExt: 0b110
     }
-  ]
+  ],
+  "CALL": [
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+      code: 0b11101000,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b110,
+      hasRelOperand: true
+    },
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11111111,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b010
+    }
+  ],
+  "JMP": [
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+    //        ccccccxc
+      code: 0b11101001,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: true,
+      allowedSizes: 0b111,
+      hasRelOperand: true
+    },
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+    //        ccccccds
+      code: 0b11111111,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b111,
+      opcodeExt: 0b100
+    }
+  ],
+  "RET": [
+    {
+      ops: [
+      ],
+    //        ccccccxc
+      code: 0b11000011,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b000,
+      hasRelOperand: false
+    },
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+    //        ccccccds
+      code: 0b11000010,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b010
+    }
+  ],
+  "POP": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+      code: 0b10001111,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b010,
+      hasRelOperand: false,
+      opcodeExt: 0b000
+    }
+  ],
+  "PUSH": [
+    {
+      ops: [
+        operandMCTypes.rm
+      ],
+      code: 0b11111111,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b010,
+      hasRelOperand: false,
+      opcodeExt: 0b110
+    }
+  ],
+  "LOOP": [
+    {
+      ops: [
+        operandMCTypes.imm
+      ],
+      code: 0b11100010,
+      hasDirBit: false,
+      hasSizeBit: false,
+      hasImmSizeBit: false,
+      allowedSizes: 0b001,
+      hasRelOperand: true
+    }
+  ],
 }
 
 class Instruction {
   #strMnemonic;
   #objOperands;
   #flag_d;
-  #logger
+  #logger;
+  #addrImm;
+  #nameImm;
+  #addrDisp;
+  #nameDisp;
+  #addrRel;
+  #nameRel;
+  #relSize;
+
   constructor(objAsmCommand, flag_d, logger) {
     this.#logger = logger;
     this.#flag_d = flag_d;
@@ -545,13 +669,40 @@ class Instruction {
     ops.forEach((item, i) => {
       if (item.type===operandMCTypes.imm) {
         //sizes.push(NumParser.getMinSize(item.objVal));
-        let sz = NumParser.getMinSize(item.objVal);
+        let sz;
+        if (typeof(item.objVal)==="number") {
+          sz = NumParser.getMinSize(item.objVal);
+        }
+        else if (typeof(item.objVal)==="object"){
+          sz = item.objVal.length;
+        }
         immSize = sz;
         if (sz > 32) {
-              console.warn("Immediate owerflowed.");
-              immSize = 32;
+          console.warn("Immediate owerflowed. Use 32bit.");
+          immSize = 32;
         }
         imm = item.objVal;
+      }
+      else if (item.type===operandMCTypes.n_imm) {
+        imm = [];
+        if (objInstr.hasRelOperand) {
+          this.#nameRel = item.objVal;
+          if (objInstr.allowedSizes&0b010) {
+            this.#relSize = 16;
+          }
+          else {
+            this.#relSize = 8;
+          }
+          for (var i = 0; i < this.#relSize; i+=8) {
+            imm.push(0x00);
+          }
+          immSize = this.#relSize;
+        }
+        else {
+          this.#nameImm = item.objVal;
+          imm = [0x00, 0x00];
+          immSize = 0x10;
+        }
       }
       else if (typeof(item.objVal)==="object") {
         if (item.objVal instanceof Register) {
@@ -576,10 +727,10 @@ class Instruction {
             disp = [];
             if(f_rm.hasDisp()) {
               if (!f_rm.hasBase()&&!f_rm.hasIndex()) {
-                disp = this.chunkVal(f_rm.displacement, 0x10);
+                disp = this.chunkVal(f_rm.displacement, 0x10); // For mod==00b uses disp16
               }
               else {
-                disp = this.chunkVal(f_rm.displacement);
+                disp = this.chunkVal(f_rm.displacement, f_rm.getDispMinSize());
               }
             }
         }
@@ -604,7 +755,8 @@ class Instruction {
               }
             }
         }
-        else if (this.hasField(operandMCTypes.imm)&&imm!==undefined) {
+        else if ((this.hasField(operandMCTypes.imm)||this.hasField(operandMCTypes.n_imm))
+                  &&imm!==undefined) {
           if(immSize===8) {
             opcode&=0xFE;
           }
@@ -621,6 +773,15 @@ class Instruction {
       (this.bitS && objInstr.hasImmSizeBit)) {
         opcode ^= 0x02;
       }
+      else if (!this.bitS && objInstr.hasImmSizeBit) {
+        if ((this.hasField(operandMCTypes.imm)||this.hasField(operandMCTypes.n_imm)) &&
+        !prefixes.includes(Prefix.prefixes.operandOverride)) {
+          if ((immSize===16 && this.#flag_d) ||
+          (immSize>=32 && !this.#flag_d)) {
+            prefixes.push(Prefix.prefixes.operandOverride);
+          }
+        }
+      }
     }
 
     if (typeof(objInstr.sec_code)==="number") {
@@ -630,17 +791,6 @@ class Instruction {
     // STEP 5. Generate ModRM
     if (objInstr.opcodeExt !== undefined) {
       f_reg = objInstr.opcodeExt;
-    }
-    if (imm!==undefined) {
-      if (this.bitS && objInstr.hasImmSizeBit) {
-        chunckedImm = this.chunkVal(imm, 8);
-      }
-      else if (f_rm instanceof Register) {
-        chunckedImm = this.chunkVal(imm, f_rm.size);
-      }
-      else {
-        chunckedImm = this.chunkVal(imm, immSize);
-      }
     }
 
     retCode = retCode.concat(prefixes);
@@ -653,8 +803,35 @@ class Instruction {
     if (f_reg !== undefined && f_rm !== undefined) {
       var modrm = new ModRM(f_reg, f_rm);
       retCode.push(modrm.assembleModRM());
+      if (ModRM.isEA(f_rm) && f_rm.dispName !== undefined) {
+        this.#addrDisp = retCode.length;
+        this.#nameDisp = f_rm.dispName;
+      }
     }
     retCode = retCode.concat(disp);
+
+    if (imm!==undefined) {
+      if (typeof(imm)==="object") {
+        if (objInstr.hasRelOperand) {
+          this.#addrRel = retCode.length;
+        }
+        else {
+          this.#addrImm = retCode.length;
+        }
+        chunckedImm = imm;
+      }
+      else {
+        if (this.bitS && objInstr.hasImmSizeBit) {
+          chunckedImm = this.chunkVal(imm, 8);
+        }
+        else if (f_rm instanceof Register) {
+          chunckedImm = this.chunkVal(imm, f_rm.size);
+        }
+        else {
+          chunckedImm = this.chunkVal(imm, immSize);
+        }
+      }
+    }
     retCode = retCode.concat(chunckedImm);
     return retCode;
   }
@@ -702,6 +879,34 @@ class Instruction {
     return retVal;
   }
 
+  get namedImmAddr() {
+    return this.#addrImm;
+  }
+
+  get nameImm() {
+    return this.#nameImm;
+  }
+
+  get namedDispAddr() {
+    return this.#addrDisp;
+  }
+
+  get nameDisp() {
+    return this.#nameDisp;
+  }
+
+  get addrRel() {
+    return this.#addrRel;
+  }
+
+  get nameRel() {
+    return this.#nameRel;
+  }
+
+  get relSize() {
+    return this.#relSize;
+  }
+
   /**
    * [bitS description]
    * +-----+-------+-------+-------+-------+
@@ -721,7 +926,9 @@ class Instruction {
     var isEA = false;
     for (var i = 0; i < this.#objOperands.length; i++) {
       if (this.#objOperands[i].type===operandMCTypes.rm &&
-      this.#objOperands[i].objVal instanceof EffectiveAddress) isEA = true;
+      this.#objOperands[i].objVal instanceof EffectiveAddress) {
+        isEA = true;
+      }
       else if ((this.#objOperands[i].type===operandMCTypes.rm ||
       this.#objOperands[i].type===operandMCTypes.reg) &&
       this.#objOperands[i].objVal instanceof Register) {
@@ -729,6 +936,7 @@ class Instruction {
       }
       else if (this.#objOperands[i].type===operandMCTypes.imm) {
         immLen = NumParser.getMinSize(this.#objOperands[i].objVal);
+        console.log(immLen);
       }
     }
     if (isEA) {
@@ -751,6 +959,9 @@ class Instruction {
           return false;
         }
       }
+    }
+    else if (this.#objOperands.length===1 && immLen===8) {
+      return true;
     }
     return false;
   }
@@ -780,7 +991,11 @@ class Instruction {
         else {
           force: {
             for (var j = 0; j < arrInstr[i].ops.length; j++) {
-              if (arrInstr[i].ops[j] !== operands[j].type) {
+              let type = operands[j].type;
+              if (type===operandMCTypes.n_imm) {
+                type=operandMCTypes.imm;
+              }
+              if (arrInstr[i].ops[j] !== type) {
                 break force;
               }
             }
@@ -866,6 +1081,12 @@ class Instruction {
       else if (arrAsm_t[i].type === operandASMTypes.imm) {
         ret.push({
           type: operandMCTypes.imm,
+          objVal: arrAsm_t[i].objVal
+        });
+      }
+      else if (arrAsm_t[i].type === operandASMTypes.named_imm) {
+        ret.push({
+          type: operandMCTypes.n_imm,
           objVal: arrAsm_t[i].objVal
         });
       }

@@ -4,7 +4,7 @@
  * Supports 16 bits addressation only, without scale factor and SIB byte.
  * Effective eddress Shema: [Base+Index+/-disp] (none or disp8 or disp16).
  *
- * For redefine segment register, please, use segment prefixes, e.g.:
+ * For redefine segment register, please use segment prefixes, e.g.:
  * SS MOV CX, [0X0F]
  * Not:
  * MOV CX, [SS:0X0F]
@@ -15,6 +15,7 @@ class EffectiveAddress {
   #objBase;
   #objIndex;
   #disp = 0x0000;
+  #dispName;
 
   static maxDispSize = 0x10; // Supports 16-bit addr. mode only (max - disp16)
 
@@ -44,11 +45,14 @@ class EffectiveAddress {
       if (EffectiveAddress.isValidBase(arrEA[i])) {
         this.#objBase = new Register(arrEA[i]);
       }
-      if (EffectiveAddress.isValidIndex(arrEA[i])) {
+      else if (EffectiveAddress.isValidIndex(arrEA[i])) {
         this.#objIndex = new Register(arrEA[i]);
       }
-      if (!isNaN(NumParser.str2number(arrEA[i]))) {
+      else if (!isNaN(NumParser.str2number(arrEA[i]))) {
         this.#disp=NumParser.str2number(arrEA[i]);
+      }
+      else if (/[A-Za-z_][A-Za-z0-9_]+/i.test(arrEA[i])) {
+        this.#dispName = arrEA[i];
       }
     }
   }
@@ -62,7 +66,7 @@ class EffectiveAddress {
   }
 
   hasDisp() {
-    return this.#disp!==0;
+    return !(this.#disp===0&&this.#dispName===undefined);
   }
 
   get base() {
@@ -77,6 +81,10 @@ class EffectiveAddress {
     return this.#disp;
   }
 
+  get dispName() {
+    return this.#dispName;
+  }
+
   /**
    * returns count of bits of displacement.
    * Notice: be careful with large values: max counting size - 32 bits
@@ -84,7 +92,12 @@ class EffectiveAddress {
    */
   getDispMinSize() {
     if (this.hasDisp()) {
-      return NumParser.getMinSize(this.#disp);
+      if (this.#dispName!==undefined) {
+        return 16; // Named displacement always imagine as disp16 (2 bytes).
+      }
+      else {
+        return NumParser.getMinSize(this.#disp);
+      }
     }
     return 0;
   }
@@ -182,7 +195,8 @@ class EffectiveAddress {
         if (hasIndex) return false;
         hasIndex = true;
       }
-      else if (!isNaN(NumParser.str2number(strElems[i]))) { // Disp
+      else if (!isNaN(NumParser.str2number(strElems[i]))||   // Disp
+              /[A-Za-z_][A-Za-z0-9_]+/i.test(strElems[i])) {
         if (hasDisp) return false;
         hasDisp = true;
       }
@@ -194,6 +208,7 @@ class EffectiveAddress {
   }
 }
 
+// Start Unit
 function Unit1() {
   let sets = [
     // Mod = 00b
@@ -252,3 +267,4 @@ function Unit1() {
     console.log("Mod: "+ea.predictMod());
   }
 }
+// End user

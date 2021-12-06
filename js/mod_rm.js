@@ -100,7 +100,7 @@ class ModRM {
     }
     else if (ModRM.isEA(this.#objRM)) {
       let dispSize = this.#objRM.getDispMinSize();
-      if (!this.#objRM.hasBase() && !this.#objRM.hasIndex() && dispSize===0x08) {
+      if (!this.#objRM.hasBase() && !this.#objRM.hasIndex() && dispSize>0) {
         retMod = 0;
       }
       else if (dispSize/8<3) {

@@ -176,6 +176,18 @@ dataList = [
   {name: "msg", type: "dd", val: [43,64,23,11]}
 ];
 
+
+function saveByteArray(reportName, byte) {
+    var byteArray = new Uint8Array(byte);
+    var blob = new Blob([byteArray], {type: "application/octet-stream"});
+    var link = document.createElement('a');
+    link.href = window.URL.createObjectURL(blob);
+    console.log(link.href);
+    var fileName = reportName;
+    link.download = fileName;
+    link.click();
+};
+
 //Assembly line spec:
 //  <mnemonic> [<op1>, <op2>, <op3> ;<comment>]
 //-- OR --
@@ -185,15 +197,103 @@ dataList = [
 //-- OR --
 //  [;<comment>]
 
-function compile(strCode, logger) {
+function compile(strCode, orgAddr, filename, flag_d, logger) {
   // STEP 1: tokenizing
   tokens = getTokens(strCode);
   //STEP 2: Find code by schema
+  var labelsAddr = {
+    "__org__": orgAddr
+  };
+  var labelsUsage = {};
+  var rel16LabelsUsage = {};
+  var rel8LabelsUsage = {};
+
   var code = [];
   tokens.forEach((item, i) => {
-    let instruction = new Instruction(item.objLine, 0, logger); // d=0, cos asm 16-bit addressing mode support only
-    code = code.concat(instruction.machineCode);
+    if (item.type=="command") {
+      let instruction = new Instruction(item.objLine, (flag_d?1:0), logger); // d=0, cos asm 16-bit addressing mode support only
+      i_code = instruction.machineCode;
+      if (instruction.namedImmAddr!==undefined) {
+        if (labelsUsage[instruction.nameImm]===undefined) labelsUsage[instruction.nameImm]=[];
+        labelsUsage[instruction.nameImm].push(instruction.namedImmAddr+code.length);
+      }
+      if (instruction.namedDispAddr!==undefined) {
+        if (labelsUsage[instruction.nameDisp]===undefined) labelsUsage[instruction.nameDisp]=[];
+        labelsUsage[instruction.nameDisp].push(instruction.namedDispAddr+code.length);
+      }
+      if (instruction.addrRel!==undefined) {
+        if (instruction.relSize===16) {
+          if (rel16LabelsUsage[instruction.nameRel]===undefined) rel16LabelsUsage[instruction.nameRel]=[];
+          rel16LabelsUsage[instruction.nameRel].push(instruction.addrRel+code.length);
+        }
+        else {
+          if (rel8LabelsUsage[instruction.nameRel]===undefined) rel8LabelsUsage[instruction.nameRel]=[];
+          rel8LabelsUsage[instruction.nameRel].push(instruction.addrRel+code.length);
+        }
+      }
+      code = code.concat(i_code);
+    }
+    else if (item.type=="data") {
+      labelsAddr[item.objLine.addrLabel.name] = code.length+labelsAddr["__org__"];
+      code = code.concat(item.objLine.filledContent);
+    }
+    else if (item.type=="label") {
+      labelsAddr[item.objLine.name] = code.length+labelsAddr["__org__"];
+    }
   });
+
+  console.log(labelsUsage);
+  Object.keys(labelsUsage).forEach((item, i) => {
+    let data = labelsAddr[item]
+    let addresses = labelsUsage[item];
+    addresses.forEach((addr, j) => {
+      let t = data;
+      for (let k=0; k<2; k++) {
+        code[addr+k]=t&0xFF;
+        t>>=0x08;
+      }
+    });
+  });
+  console.log(rel16LabelsUsage);
+  Object.keys(rel16LabelsUsage).forEach((item, i) => {
+    let data = labelsAddr[item]
+    let addresses = rel16LabelsUsage[item];
+    addresses.forEach((addr, j) => {
+      // +2 cos a pivot point is the next after a last byte of instr and Imm16
+      // is the last field of instruction.
+      let delta=data-(addr+2)-labelsAddr["__org__"];
+
+      if (delta>0xFFFF) {
+        console.error("Relative address is not Rel16.");
+      }
+      else if (delta<0) {
+        delta = 0x10000 + delta;
+      }
+      for (let k=0; k<2; k++) {
+        code[addr+k]=delta&0xFF;
+        delta>>=0x08;
+      }
+    });
+  });
+  console.log(rel8LabelsUsage);
+  Object.keys(rel8LabelsUsage).forEach((item, i) => {
+    let data = labelsAddr[item]
+    let addresses = rel8LabelsUsage[item];
+    addresses.forEach((addr, j) => {
+      // +2 cos a pivot point is the next after a last byte of instr and Imm16
+      // is the last field of instruction.
+      let delta=data-(addr+1)-labelsAddr["__org__"];
+      if (delta>0xFF) {
+        console.error("Relative address is not Rel16.");
+      }
+      else if (delta<0) {
+        delta = 0x100 + delta;
+      }
+      code[addr]=delta&0xFF;
+      delta>>=0x08;
+    });
+  });
+  saveByteArray(filename, code);
   var strCode = "";
   code.forEach((item, i) => {
     strCode+=('00'+item.toString(16)).slice(-2);
@@ -244,9 +344,11 @@ function getTokens (strCode) {
         break;
       case "label":
         console.log("LABEL");
+        objLine = new AddrLabel(codeLines[i].trim().slice(0, -1))
         break;
       case "data":
         console.log("DATA");
+        objLine = new DataDef(codeLines[i]);
         break;
       default:
 

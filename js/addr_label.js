@@ -1,6 +1,6 @@
 class AddrLabel {
   #name = "";
-  #addr = 0x0;
+  #addr = 0x00;
   constructor (name) {
     this.#name = name;
   }
@@ -12,5 +12,8 @@ class AddrLabel {
   }
   get address() {
     return this.#addr;
+  }
+  get name() {
+    return this.#name;
   }
 }

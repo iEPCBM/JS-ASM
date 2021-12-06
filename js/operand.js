@@ -9,5 +9,6 @@ operandMCTypes = {
   imm:     0x00,
   moffset: 0x01, //dispX (with ModRM only)
   reg:     0x02,
-  rm:      0x03
+  rm:      0x03,
+  n_imm:   0x04
 };

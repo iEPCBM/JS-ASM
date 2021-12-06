@@ -1,0 +1,157 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #003351;
+  color: #ccc;
+  font-family:courier;
+  font-size: 14px;
+  position: relative;
+  min-height: 100vh;
+}
+
+.ui-wrapper {
+  position: relative;
+  display: inline-block;
+  margin: 1em;
+}
+.param-container {
+  display: flex;
+  flex-shrink: 0;
+  max-width: 20em;
+  padding: .25em 0;
+  align-items: center;
+  position: relative;
+}
+.param-container > .label {
+  padding: 0;
+  margin: 0 0 0 10px;
+  width: 100%;
+  min-width: 0;
+  text-align: right;
+}
+
+.bt {
+  margin: 5px 10px;
+}
+
+.title {
+  margin: 0.5em 10px;
+  display: inline-block;
+}
+
+.nav-wrapper {
+  display: inline-block;
+  float: right;
+  margin: 1.5em 2em;
+}
+
+.nav-container {
+  list-style: none;
+  float: right;
+  margin: 0;
+  padding: 0;
+  font-size: 1.15em;
+  box-sizing: content-box;
+}
+
+.nav-container>li {
+  display: inline;
+  padding: 0 0.75em;
+}
+
+.nav-container>li a {
+  text-decoration: none;
+  color: #ccc;
+  position: relative;
+}
+.nav-container>li a::before {
+  content: '$';
+  color: #55EE22;
+  padding: 0 0.5em 0 0;
+}
+
+.nav-container>li a::after {
+  content: '';
+  background-color: #ccc;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 0 0.1em;
+  height: 0;
+  /*transition: height .1s ease;*/
+}
+
+.nav-container>li a:hover::after {
+  height: 0.05em;
+}
+
+.param-container input {
+  background-color: #003351;
+  color: #ccc;
+  width: auto;
+  min-width: 0;
+  width: 100%;
+  margin: 0 5px;
+  outline-color: #004462;
+  outline-width: 2px;
+  outline-style: solid;
+  border-width: 1px;
+  border-style: solid;
+  font-family:courier;
+  font-size: 14px;
+}
+
+.param-container input[type="checkbox"] {
+  outline-style: none;
+  width: auto;
+  margin: 0;
+}
+
+.chb-wrapper {
+  width: 100%;
+  margin: 0 5px;
+}
+
+.bt {
+  font-family:courier;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #004462;
+  color: #ccc;
+  border-style: outset;
+  border-width: 2px;
+  border-color: #aaa;
+  position: relative;
+  float: right;
+  margin: 10px 5px;
+  cursor: pointer;
+}
+
+.footer-wrapper {
+  padding: 2em 0;
+  margin: 1.5em 0 0;
+  background-color: #002240;
+  background: linear-gradient(0deg, rgba(0,34,64,1) 0%, rgba(0,51,81,1) 100%);
+  position: absolute;
+  bottom: 0;
+  width: 100%
+}
+
+.footer-wrapper>p {
+  display: inline-block;
+  padding: 0 2em;
+  margin: 0;
+}
+
+.repo-link {
+  float: right;
+}
+
+.pre-footer {
+  padding-bottom: 5em;
+}
+
+a {
+  color: #ccc;
+}
