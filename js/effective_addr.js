@@ -212,52 +212,59 @@ class EffectiveAddress {
 function Unit1() {
   let sets = [
     // Mod = 00b
-    [new Register("BX"), new Register("SI"), 0],
-    [new Register("BX"), new Register("DI"), 0],
-    [new Register("BP"), new Register("SI"), 0],
-    [new Register("BP"), new Register("DI"), 0],
-    [undefined, new Register("SI"), 0],
-    [undefined, new Register("DI"), 0],
-    [undefined, undefined, 2],
-    [new Register("BX"), undefined, 0],
+    ["[BX+SI]",0,0],
+    ["[BX+DI]",0,1],
+    ["[BP+SI]",0,2],
+    ["[BP+DI]",0,3],
+    ["[SI]",0,4],
+    ["[DI]",0,5],
+    ["[BX]",0,7],
     // Mod = 01b
-    [new Register("BX"), new Register("SI"), 32],
-    [new Register("BX"), new Register("DI"), 32],
-    [new Register("BP"), new Register("SI"), 32],
-    [new Register("BP"), new Register("DI"), 32],
-    [undefined, new Register("SI"), 32],
-    [undefined, new Register("DI"), 32],
-    [new Register("BP"), undefined, 32],
-    [new Register("BX"), undefined, 32],
+    ["[BX+SI+32]",1,0],
+    ["[BX+DI+32]",1,1],
+    ["[BP+SI+32]",1,2],
+    ["[BP+DI+32]",1,3],
+    ["[SI+32]",1,4],
+    ["[DI+32]",1,5],
+    ["[BP+32]",1,6],
+    ["[BX+32]",1,7],
     // Mod = 10b
-    [new Register("BX"), new Register("SI"), 632],
-    [new Register("BX"), new Register("DI"), 632],
-    [new Register("BP"), new Register("SI"), 632],
-    [new Register("BP"), new Register("DI"), 632],
-    [undefined, new Register("SI"), 632],
-    [undefined, new Register("DI"), 632],
-    [new Register("BP"), undefined, 632],
-    [new Register("BX"), undefined, 632],
+    ["[BX+SI+632]",2,0],
+    ["[BX+DI+632]",2,1],
+    ["[BP+SI+632]",2,2],
+    ["[BP+DI+632]",2,3],
+    ["[SI+632]",2,4],
+    ["[DI+632]",2,5],
+    ["[BP+632]",2,6],
+    ["[BX+632]",2,7],
   ];
 
   for (var i = 0; i < sets.length; i++) {
     sets[i]
-    let ea = new EffectiveAddress(...sets[i]);
-    console.log("R/M: "+ea.rmBits);
-    console.log("Mod: "+ea.predictMod());
-
+    let ea = new EffectiveAddress(sets[i][0]);
+    let pmod = ea.predictMod();
+    let prm = ea.rmBits;
+    console.log(sets[i][0]);
+    let smod = "\tMod: " + pmod + "\ttest: "+sets[i][1];
+    if (pmod != sets[i][1])
+      smod+="\tERROR";
+    let srm = "\tR/M: " + prm + "\ttest: "+sets[i][2];
+    if (prm != sets[i][2])
+      srm+="\tERROR";
+    console.log(smod);
+    console.log(srm);
   }
 
   console.log("=== Mistakes test");
 
   sets = [
     // Mod = 00b
-    [new Register("SI"), new Register("BX"), 0],
-    [new Register("BX"), new Register("BP"), 1],
-    [new Register("DI"), new Register("SI"), 632],
-    [new Register("BP"), new Register("DI"), 0],
-    [undefined, undefined, 0],
-    [new Register("BX"), undefined, 0],
+    "[SI+BX]",
+    "[BX+BP+1]",
+    "[DI+SI+632]",
+    "[BP+DI]",
+    "[]",
+    "[BX]",
   ];
 
   for (var i = 0; i < sets.length; i++) {
